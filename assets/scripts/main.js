@@ -1,18 +1,19 @@
 require([
     'lib-thirdparty/ready', // Because there's no sense loading jQuery if all we use it for is the 'onready' callback
     'game/Game',
-    'physijs'
+    'game/environments/TestWorld'
 ], function (
     ready,
-    Game
+    Game,
+    TestWorld
 ) {
     "use strict";
 
-    Physijs.scripts.worker = 'assets/scripts/lib-thirdparty/physijs_worker.js';
 
     ready(function () {
 
-        Game.init();
+        var testWorld = new TestWorld();
+        Game.init().loadEnvironment(testWorld);
 
     });
 

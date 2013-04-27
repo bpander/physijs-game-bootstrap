@@ -1,15 +1,13 @@
 define([
     'lib/Util',
-    'game/game-objects/Box',
-    'game/game-objects/Ground',
     'three',
     'physijs'
 ], function (
-    Util,
-    Box,
-    Ground
+    Util
 ) {
     "use strict";
+
+    Physijs.scripts.worker = 'assets/scripts/lib-thirdparty/physijs_worker.js';
 
     var Game = {
 
@@ -19,17 +17,24 @@ define([
 
         scene: null,
 
-        objects: []
-
+        environment: null
     };
 
     var _events = {
 
         onResize: function () {
             this.setAspectRatio();
+        },
+
+        onEnvironmentLoaded: function () {
+            this.animate();
         }
     };
 
+    /**
+     * Initialize the game with a given environment
+     * @param {Environment} environment  The environment to run the game framework on
+     */
     Game.init = function () {
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -48,8 +53,7 @@ define([
         // Get the ball rolling...
         this.bindScope();
         this.bindEvents();
-        this.createScene();
-        this.animate();
+        return this;
     };
 
     Game.animate = function () {
@@ -58,8 +62,10 @@ define([
     };
 
     Game.render = function () {
+        // Run the physics simulation and update the environment
         this.scene.simulate();
-        this.camera.lookAt(this.box.mesh.position);
+        this.environment.updateObjects();
+        this.environment.update();
         this.renderer.render(this.scene, this.camera);
     };
 
@@ -79,31 +85,13 @@ define([
         this.renderer.setSize( window.innerWidth, window.innerHeight );
     };
 
-    Game.add = function (gameObject) {
-        this.objects.push(gameObject);
-        this.scene.add(gameObject.mesh);
+    Game.loadEnvironment = function (environment) {
+        this.environment = environment;
+        this.environment.game = this;
+
+        this.environment.load(_events.onEnvironmentLoaded);
     };
 
-    Game.createScene = function () {
-        // Create lights
-        var directionalLight = new THREE.DirectionalLight(0xFFFFFF);
-        directionalLight.position.y = 200;
-        directionalLight.castShadow = true;
-        this.scene.add(directionalLight);
-
-        var ambientLight = new THREE.AmbientLight(0x333333);
-        this.scene.add(ambientLight);
-
-        // Create objects
-        this.box = new Box();
-        this.box.mesh.position.y = 200;
-        var rotation = THREE.Math.degToRad(10);
-        this.box.mesh.rotation.set(rotation, rotation, rotation);
-        this.add(this.box);
-
-        this.ground = new Ground();
-        this.add(this.ground);
-    };
 
     return Game;
 });
