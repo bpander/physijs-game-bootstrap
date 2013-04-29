@@ -33,6 +33,7 @@ define([
         },
 
         onMouseMove: function (e) {
+            this.mouse.isDirty = true;
             this.mouse.movementX = e.movementX || e.webkitMovementX || e.mozMovementX || 0;
             this.mouse.movementY = e.movementX || e.webkitMovementY || e.mozMovementY || 0;
         }
@@ -46,16 +47,14 @@ define([
     };
 
     Input.mouse = {
-        x: -1,
-        y: -1,
         movementX: -1,
-        movementY: -1
+        movementY: -1,
+        isDirty: true
     };
 
     Input.init = function () {
         Util.bindAll(_events, this);
         this.bindEvents();
-
     };
 
     Input.bindEvents = function () {
@@ -68,9 +67,15 @@ define([
         return _keysDown.indexOf(keyCode) !== -1;
     };
 
+    /**
+     * Wipe out the last mouse movement if the movement is dirty
+     */
     Input.update = function () {
-        this.mouse.movementY = 0;
-        this.mouse.movementX = 0;
+        if (this.mouse.isDirty) {
+            this.mouse.movementY = 0;
+            this.mouse.movementX = 0;
+            this.mouse.isDirty = false;
+        }
     };
 
     return Input;

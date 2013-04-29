@@ -16,7 +16,7 @@ define([
 
         this.material = Physijs.createMaterial(
             new THREE.MeshLambertMaterial({ color: 0x0000FF }),
-            1.9, // friction
+            2.9, // friction
             0.5  // restitution
         );
 

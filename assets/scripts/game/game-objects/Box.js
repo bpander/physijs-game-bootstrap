@@ -1,10 +1,16 @@
 define([
-    'game/game-objects/GameObjectBase'
+    'game/game-objects/GameObjectBase',
+    'lib/Util'
 ], function (
-    GameObjectBase
+    GameObjectBase,
+    Util
 ) {
     "use strict";
 
+    /**
+     * An example of an object that extends GameObjectBase. Basically just a cube.
+     * @extends {GameObjectBase}
+     */
     var Box = function () {
         GameObjectBase.call(this);
 
@@ -12,11 +18,11 @@ define([
         // Put object-specific properties here //
         /////////////////////////////////////////
         
-        this.width = 50;
+        this.width = 20;
 
-        this.height = 50;
+        this.height = 20;
 
-        this.depth = 50;
+        this.depth = 20;
 
 
         ////////////////////////////////////
@@ -25,25 +31,45 @@ define([
 
         this.geometry = new THREE.CubeGeometry(this.width, this.height, this.depth);
 
-        var restitution = 1.2;
+        var friction = 1.9;
+        var restitution = 0.2;
         this.material = Physijs.createMaterial(
             new THREE.MeshPhongMaterial({ color: 0xFF0000 }),
-            0.9, // friction
-            restitution  // restitution
+            friction,
+            restitution
         );
 
         this.mesh = new Physijs.BoxMesh(this.geometry, this.material, 10);
         this.mesh.castShadow = true;
+
+        Util.bindAll(_events, this);
+        this.mesh.addEventListener('collision', _events.onCollision);
     };
     Box.prototype = new GameObjectBase();
     Box.prototype.constructor = Box;
 
-    /**
-     * Overwrite update function
-     */
-    Box.prototype.update = function () {
+    var _events = {
 
+        onCollision: function (collidedWith, linearVelocity, angularVelocity) {
+            var ballMesh = this.environment.ball.mesh;
+            if (collidedWith === ballMesh) {
+                console.log(ballMesh, this.mesh);
+                var constraint = new Physijs.PointConstraint(
+                    ballMesh,
+                    this.mesh,
+                    new THREE.Vector3(0, 10, 0)
+                );
+                console.log(constraint);
+                this.environment.game.scene.addConstraint(constraint);
+                this.mesh.removeEventListener('collision', _events.onCollision);
+            }
+        }
     };
+
+    /**
+     * Overwrite update function. This is an intentional no-op.
+     */
+    Box.prototype.update = Util.noop;
 
 
     return Box;

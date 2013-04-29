@@ -13,12 +13,28 @@ define([
 
     var Game = {
 
+        /**
+         * THREEjs WebGL renderer
+         * @type {THREE.WebGLRenderer}
+         */
         renderer: null,
 
+        /**
+         * THREEjs camera object
+         * @type {THREE.PerspectiveCamera}
+         */
         camera: null,
 
+        /**
+         * Physijs scene
+         * @type {Physjs.Scene}
+         */
         scene: null,
 
+        /**
+         * The environment that we'll play the game in. Will be an instance of a class that extends EnvironmentBase.
+         * @type {EnvironmentBase}
+         */
         environment: null
     };
     window.Game = Game;
@@ -40,8 +56,8 @@ define([
 
 
     /**
-     * Initialize the game with a given environment
-     * @param {Environment} environment  The environment to run the game framework on
+     * Initialize the game framework
+     * @return {Game}
      */
     Game.init = function () {
 
@@ -54,6 +70,7 @@ define([
         document.body.appendChild(this.renderer.domElement);
         Util.requestPointerLock(this.renderer.domElement);
 
+        // Set up the camera and scene
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
         this.setAspectRatio();
 
@@ -61,21 +78,26 @@ define([
         this.scene.setGravity(new THREE.Vector3( 0, -385, 0 ));
         this.scene.add(this.camera);
 
-
         // Get the ball rolling...
         Input.init();
         this.bindScope();
         this.bindEvents();
+
         return this;
     };
 
+    /**
+     * The animation loop
+     */
     Game.animate = function () {
         this.render();
         requestAnimationFrame(this.animate);
     };
 
+    /**
+     * Run the physics simulation, update the environment, update the input object and render the scene
+     */
     Game.render = function () {
-        // Run the physics simulation and update the environment
         this.scene.simulate();
         this.environment.updateObjects();
         this.environment.update();
@@ -83,28 +105,49 @@ define([
         this.renderer.render(this.scene, this.camera);
     };
 
+    /**
+     * Binds the `this` argument for any function that needs it
+     * @return {Game}
+     */
     Game.bindScope = function () {
         Util.bindAll(_events, this);
         this.animate = this.animate.bind(this);
+        return this;
     };
 
+    /**
+     * Binds any event handlers
+     * @return {Game}
+     */
     Game.bindEvents = function () {
         window.addEventListener('resize', _events.onResize, false);
         this.renderer.domElement.addEventListener('click', _events.onClick);
+        return this;
     };
 
+    /**
+     * Update the aspect ratio for THREEjs
+     * @return {Game}
+     */
     Game.setAspectRatio = function () {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        return this;
     };
 
+    /**
+     * Loads an environment and runs it when it's finished
+     * @param  {EnvironmentBase} environment  An instance of a class that is extended from EnvironmentBase that we want to run
+     * @return {Game}
+     */
     Game.loadEnvironment = function (environment) {
         this.environment = environment;
         this.environment.game = this;
 
         this.environment.load(_events.onEnvironmentLoaded);
+        return this;
     };
 
 
