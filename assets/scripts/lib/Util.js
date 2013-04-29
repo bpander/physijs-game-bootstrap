@@ -14,6 +14,13 @@ define([
         }
     };
 
+    Util.noop = function () {};
+
+    Util.requestPointerLock = function(elem) {
+        elem.requestPointerLock = elem.requestPointerLock || elem.mozRequestPointerLock || elem.webkitRequestPointerLock || Util.noop;
+        elem.requestPointerLock();
+    };
+
 
     return Util;
 });

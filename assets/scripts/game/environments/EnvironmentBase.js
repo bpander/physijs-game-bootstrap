@@ -49,6 +49,7 @@ define([
     };
 
     EnvironmentBase.prototype.add = function (gameObject) {
+        gameObject.environment = this;
         this.gameObjects.push(gameObject);
         this.game.scene.add(gameObject.mesh);
     };

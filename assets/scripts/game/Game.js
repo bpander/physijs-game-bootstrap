@@ -1,9 +1,11 @@
 define([
     'lib/Util',
+    'game/Input',
     'three',
     'physijs'
 ], function (
-    Util
+    Util,
+    Input
 ) {
     "use strict";
 
@@ -19,6 +21,7 @@ define([
 
         environment: null
     };
+    window.Game = Game;
 
     var _events = {
 
@@ -28,8 +31,13 @@ define([
 
         onEnvironmentLoaded: function () {
             this.animate();
+        },
+
+        onClick: function (e) {
+            Util.requestPointerLock(e.currentTarget);
         }
     };
+
 
     /**
      * Initialize the game with a given environment
@@ -37,20 +45,25 @@ define([
      */
     Game.init = function () {
 
+        // Create the renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.shadowMapEnabled = true;
         this.renderer.shadowMapSoft = true;
+
+        // Append the renderer's dom element and request pointer lock
         document.body.appendChild(this.renderer.domElement);
+        Util.requestPointerLock(this.renderer.domElement);
 
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-        this.camera.position.set(0, 100, 200);
         this.setAspectRatio();
 
         this.scene = new Physijs.Scene();
         this.scene.setGravity(new THREE.Vector3( 0, -385, 0 ));
         this.scene.add(this.camera);
 
+
         // Get the ball rolling...
+        Input.init();
         this.bindScope();
         this.bindEvents();
         return this;
@@ -66,6 +79,7 @@ define([
         this.scene.simulate();
         this.environment.updateObjects();
         this.environment.update();
+        Input.update();
         this.renderer.render(this.scene, this.camera);
     };
 
@@ -76,6 +90,7 @@ define([
 
     Game.bindEvents = function () {
         window.addEventListener('resize', _events.onResize, false);
+        this.renderer.domElement.addEventListener('click', _events.onClick);
     };
 
     Game.setAspectRatio = function () {

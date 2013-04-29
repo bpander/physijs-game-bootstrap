@@ -1,47 +1,64 @@
 define([
     'game/environments/EnvironmentBase',
-    'game/game-objects/Box',
-    'game/game-objects/Ground'
+    'game/Input',
+    'game/game-objects/Ball',
+    'game/game-objects/Arena'
 ], function (
     EnvironmentBase,
-    Box,
-    Ground
+    Input,
+    Ball,
+    Arena
 ) {
     "use strict";
 
     var TestWorld = function () {
         EnvironmentBase.call(this);
 
-        this.box = null;
+        this.ball = null;
 
         this.ground = null;
+
+        this.relativeRotation = 0;
     };
     TestWorld.prototype = new EnvironmentBase();
     TestWorld.prototype.constructor = TestWorld;
 
     TestWorld.prototype.ready = function () {
-        // Create lights
-        var directionalLight = new THREE.DirectionalLight(0xFFFFFF);
-        directionalLight.position.y = 200;
-        directionalLight.castShadow = true;
-        this.game.scene.add(directionalLight);
+        this.game.camera.position.set(0, 100, 200);
 
-        var ambientLight = new THREE.AmbientLight(0x333333);
+        // Create lights
+        var ambientLight = new THREE.AmbientLight(0xAAAAAA);
         this.game.scene.add(ambientLight);
 
-        // Create objects
-        this.box = new Box();
-        this.box.mesh.position.y = 200;
-        var rotation = THREE.Math.degToRad(10);
-        this.box.mesh.rotation.set(rotation, rotation, rotation);
-        this.add(this.box);
+        var directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.5);
+        directionalLight.position.y = 200;
+        directionalLight.castShadow = true;
+        directionalLight.shadowMapWidth = 2048;
+        directionalLight.shadowMapHeight = 2048;
+        this.game.scene.add(directionalLight);
 
-        this.ground = new Ground();
-        this.add(this.ground);
+        // Create objects
+        this.ball = new Ball();
+        this.ball.mesh.position.y = 200;
+        this.add(this.ball);
+
+        this.arena = new Arena();
+        this.add(this.arena);
     };
 
     TestWorld.prototype.update = function () {
-        this.game.camera.lookAt(this.box.mesh.position);
+        this.updateCameraPosition();
+    };
+
+    TestWorld.prototype.updateCameraPosition = function () {
+        var camera = this.game.camera;
+        var deltaRotation = Input.mouse.movementX * 0.01;
+        this.relativeRotation = this.relativeRotation - deltaRotation;
+        camera.position.x = Math.sin(this.relativeRotation) * 200 + this.ball.mesh.position.x;
+        camera.position.z = Math.cos(this.relativeRotation) * 200 + this.ball.mesh.position.z;
+        camera.position.y = camera.position.y + Input.mouse.movementY;
+
+        camera.lookAt(this.ball.mesh.position);
     };
 
 
