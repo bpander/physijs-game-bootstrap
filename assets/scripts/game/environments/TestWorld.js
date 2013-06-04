@@ -62,17 +62,9 @@ define([
         this.add(this.ball);
 
         this.box = new Box();
-        this.box.mesh.position.set(100, 200, 10);
+        this.box.mesh.position.set(0, 0, 0);
         this.box.mesh.rotation.set(0.174, 0.174, 0.174);
         this.add(this.box);
-
-        // var constraint = new Physijs.PointConstraint(
-        //     this.box.mesh,
-        //     this.ball.mesh,
-        //     new THREE.Vector3(0, 10, 0)
-        // );
-        // this.game.scene.addConstraint(constraint);
-        // console.log('constraint added', constraint)
 
         this.arena = new Arena();
         this.add(this.arena);

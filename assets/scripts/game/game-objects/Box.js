@@ -53,15 +53,13 @@ define([
         onCollision: function (collidedWith, linearVelocity, angularVelocity) {
             var ballMesh = this.environment.ball.mesh;
             if (collidedWith === ballMesh) {
-                console.log(ballMesh, this.mesh);
-                var constraint = new Physijs.PointConstraint(
+                this.mesh.removeEventListener('collision', _events.onCollision);
+                var constraint = new Physijs.DOFConstraint(
                     ballMesh,
                     this.mesh,
-                    new THREE.Vector3(0, 10, 0)
+                    new THREE.Vector3(ballMesh.geometry.radius, ballMesh.geometry.radius, ballMesh.geometry.radius)
                 );
-                console.log(constraint);
                 this.environment.game.scene.addConstraint(constraint);
-                this.mesh.removeEventListener('collision', _events.onCollision);
             }
         }
     };
